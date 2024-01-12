@@ -1,0 +1,62 @@
+version: '3'
+
+services:
+  app:
+    container_name: nextjs-dashboard
+    build:
+      context: .
+      dockerfile: dev.Dockerfile
+
+    # Set environment variables directly in the docker-compose file
+    # environment:
+    #   ENV_VARIABLE: ${ENV_VARIABLE}
+    #   NEXT_PUBLIC_ENV_VARIABLE: ${NEXT_PUBLIC_ENV_VARIABLE}
+
+    # Set envrionment variables based on the .env file
+    env_file:
+      - .env
+    volumes:
+      - ./app:/my-workdir/app  # Map the local 'app' directory to the '/my-workdir/app' directory in the container
+      - ./public:/my-workdir/public  # Map the local 'public' directory to the '/my-workdir/public' directory in the container
+    restart: always
+    ports:
+      - 3000:3000
+    networks:
+      - my_network
+
+  # Add more containers below (nginx, postgres, etc.)
+  postgres:
+    image: postgres:latest
+    container_name: my-postgres-db
+    restart: always
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: nextjs_dashboard_db
+      POSTGRES_HOST: my-postgres-db
+    ports:
+      - '5432:5432'
+    volumes: # Add this section to define the volume for PostgreSQL data persistence
+      - postgres_data:/var/lib/postgresql/data  # Mapping a volume to store PostgreSQL data
+    networks:
+      - my_network
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: my_pgadmin_container
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_LISTEN_PORT: 5050
+    ports:
+      - "5050:5050"
+    depends_on:
+      - postgres
+# Define a network, which allows containers to communicate
+# with each other, by using their container name as a hostname
+volumes: # Define the named volume for PostgreSQL data persistence
+  postgres_data:
+    driver: local
+
+networks:
+  my_network:
+    external: true
