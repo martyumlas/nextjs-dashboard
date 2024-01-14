@@ -16,7 +16,7 @@ services:
       - ./public:/my-workdir/public  # Map the local 'public' directory to the '/my-workdir/public' directory in the container
     restart: always
     ports:
-      - 3001:3001
+      - 3000:3000
 networks:
   pg-network:
     external:
