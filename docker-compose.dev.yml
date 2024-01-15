@@ -8,7 +8,7 @@ services:
       dockerfile: dev.Dockerfile
     # Set envrionment variables based on the .env file
     env_file:
-      - .env.local
+      - .env
     networks:
       - pg-network
     volumes:

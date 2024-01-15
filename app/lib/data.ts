@@ -1,4 +1,8 @@
 import { sql } from '@vercel/postgres';
+import { PrismaClient } from '@prisma/client'
+
+const prisma = new PrismaClient()
+
 import {
   CustomerField,
   CustomersTableType,
@@ -11,21 +15,19 @@ import {
 import { formatCurrency } from './utils';
 
 export async function fetchRevenue() {
-  // Add noStore() here prevent the response from being cached.
-  // This is equivalent to in fetch(..., {cache: 'no-store'}).
-
   try {
     // Artificially delay a response for demo purposes.
     // Don't do this in production :)
-
-    // console.log('Fetching revenue data...');
     // await new Promise((resolve) => setTimeout(resolve, 3000));
 
-    const data = await sql<Revenue>`SELECT * FROM revenue`;
+    const revenueData = await prisma.revenue.findMany();
 
-    // console.log('Data fetch completed after 3 seconds.');
+    // Assuming `revenueData` is an array of objects with properties corresponding to the columns in the 'revenue' table.
 
-    return data.rows;
+    // Uncomment the line below if you want to log the fetched revenue data.
+    // console.log('Fetched revenue data:', revenueData);
+
+    return revenueData;
   } catch (error) {
     console.error('Database Error:', error);
     throw new Error('Failed to fetch revenue data.');

@@ -14,6 +14,7 @@ RUN \
 
 COPY app ./app
 COPY public ./public
+COPY prisma ./prisma
 COPY scripts ./scripts
 COPY next.config.js .
 COPY tsconfig.json .
@@ -27,7 +28,7 @@ COPY .eslintrc.json .
 # ENV NEXT_TELEMETRY_DISABLED 1
 
 # Note: Don't expose ports here, Compose will handle that for us
-
+RUN npx prisma generate
 # Start Next.js in development mode based on the preferred package manager
 CMD \
   if [ -f yarn.lock ]; then yarn dev; \
