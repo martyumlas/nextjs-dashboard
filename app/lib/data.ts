@@ -13,6 +13,7 @@ import {
   Revenue,
 } from './definitions';
 import { formatCurrency } from './utils';
+import { number } from 'zod';
 
 export async function fetchRevenue() {
   try {
@@ -41,6 +42,10 @@ export async function fetchLatestInvoices() {
       id: true,
       customers: true
     },   
+    take: 5,
+    orderBy: {
+      date: 'desc'
+    }
     
   }) 
   const latestInvoices = invoices.map(invoice => ({
@@ -58,9 +63,15 @@ export async function fetchCardData() {
     // You can probably combine these into a single SQL query
     // However, we are intentionally splitting them to demonstrate
     // how to initialize multiple queries in parallel with JS.
-    const invoiceCountPromise = sql`SELECT COUNT(*) FROM invoices`;
-    const customerCountPromise = sql`SELECT COUNT(*) FROM customers`;
-    const invoiceStatusPromise = sql`SELECT
+    // const invoiceCountPromise = sql`SELECT COUNT(*) FROM invoices`;
+    interface PaymentStatus {
+      paid: bigint;
+      pending: bigint;
+    }
+    const invoiceCountPromise = await prisma.invoices.aggregate({_count:true});
+
+    const customerCountPromise = await prisma.customers.aggregate({_count:true});
+    const invoiceStatusPromise = await prisma.$queryRaw<PaymentStatus[]>`SELECT
          SUM(CASE WHEN status = 'paid' THEN amount ELSE 0 END) AS "paid",
          SUM(CASE WHEN status = 'pending' THEN amount ELSE 0 END) AS "pending"
          FROM invoices`;
@@ -71,11 +82,11 @@ export async function fetchCardData() {
       invoiceStatusPromise,
     ]);
 
-    const numberOfInvoices = Number(data[0].rows[0].count ?? '0');
-    const numberOfCustomers = Number(data[1].rows[0].count ?? '0');
-    const totalPaidInvoices = formatCurrency(data[2].rows[0].paid ?? '0');
-    const totalPendingInvoices = formatCurrency(data[2].rows[0].pending ?? '0');
-
+    const numberOfInvoices = Number(data[0]._count ?? '0');
+    const numberOfCustomers = Number(data[1]._count ?? '0');
+     const totalPaidInvoices = formatCurrency(Number(data[2][0].paid ?? '0'));
+    const totalPendingInvoices = formatCurrency(Number(data[2][0].pending ?? '0'));
+  
     return {
       numberOfCustomers,
       numberOfInvoices,
@@ -88,6 +99,15 @@ export async function fetchCardData() {
   }
 }
 
+
+function formatedCurrency(amount: bigint, locale: string = 'en-US', currency: string = 'USD'): string {
+  const formattedCurrency = new Intl.NumberFormat(locale, {
+    style: 'currency',
+    currency: currency,
+  }).format(Number(amount)); // Convert bigint to number (assuming the currency is in cents)
+
+  return formattedCurrency;
+}
 const ITEMS_PER_PAGE = 6;
 export async function fetchFilteredInvoices(
   query: string,
