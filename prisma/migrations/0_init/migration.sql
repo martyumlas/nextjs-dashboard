@@ -1,3 +1,6 @@
+-- Add uuid-ossp extension if not exists
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
 -- CreateTable
 CREATE TABLE "customers" (
     "id" UUID NOT NULL DEFAULT uuid_generate_v4(),
