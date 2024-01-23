@@ -35,23 +35,22 @@ export async function fetchRevenue() {
 }
 
 export async function fetchLatestInvoices() {
-  try {
-    const data = await sql<LatestInvoiceRaw>`
-      SELECT invoices.amount, customers.name, customers.image_url, customers.email, invoices.id
-      FROM invoices
-      JOIN customers ON invoices.customer_id = customers.id
-      ORDER BY invoices.date DESC
-      LIMIT 5`;
-
-    const latestInvoices = data.rows.map((invoice) => ({
-      ...invoice,
+  const invoices = await prisma.invoices.findMany({
+    select: {
+      amount:true,
+      id: true,
+      customers: true
+    },   
+    
+  }) 
+  const latestInvoices = invoices.map(invoice => ({
+      id: invoice.id,
+      email: invoice.customers.email,
+      image_url: invoice.customers.image_url,
+      name: invoice.customers.name,
       amount: formatCurrency(invoice.amount),
-    }));
-    return latestInvoices;
-  } catch (error) {
-    console.error('Database Error:', error);
-    throw new Error('Failed to fetch the latest invoices.');
-  }
+  }))
+  return latestInvoices;
 }
 
 export async function fetchCardData() {

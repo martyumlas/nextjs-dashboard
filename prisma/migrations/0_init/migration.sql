@@ -1,6 +1,3 @@
--- Add uuid-ossp extension if not exists
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-
 -- CreateTable
 CREATE TABLE "customers" (
     "id" UUID NOT NULL DEFAULT uuid_generate_v4(),
@@ -39,8 +36,14 @@ CREATE TABLE "users" (
 );
 
 -- CreateIndex
+CREATE UNIQUE INDEX "invoices_id_key" ON "invoices"("id");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "revenue_month_key" ON "revenue"("month");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
+
+-- AddForeignKey
+ALTER TABLE "invoices" ADD CONSTRAINT "invoices_customer_id_fkey" FOREIGN KEY ("customer_id") REFERENCES "customers"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
