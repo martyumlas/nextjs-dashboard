@@ -58,6 +58,7 @@ export async function fetchLatestInvoices() {
       name: invoice.customers.name,
       amount: formatCurrency(invoice.amount),
   }))
+  await new Promise((resolve) => setTimeout(resolve, 3000));
   return latestInvoices;
 }
 
@@ -90,7 +91,7 @@ export async function fetchCardData() {
     const numberOfCustomers = Number(data[1]._count ?? '0');
      const totalPaidInvoices = formatCurrency(Number(data[2][0].paid ?? '0'));
     const totalPendingInvoices = formatCurrency(Number(data[2][0].pending ?? '0'));
-  
+    await new Promise((resolve) => setTimeout(resolve, 3000));
     return {
       numberOfCustomers,
       numberOfInvoices,
