@@ -122,7 +122,7 @@ export async function fetchFilteredInvoices(
   const offset = (currentPage - 1) * ITEMS_PER_PAGE;
 
   try {
-    const invoices = await sql<InvoicesTable>`
+    const invoices = await prisma.$queryRaw<InvoicesTable[]>`
       SELECT
         invoices.id,
         invoices.amount,
@@ -143,7 +143,7 @@ export async function fetchFilteredInvoices(
       LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
     `;
 
-    return invoices.rows;
+    return invoices
   } catch (error) {
     console.error('Database Error:', error);
     throw new Error('Failed to fetch invoices.');
